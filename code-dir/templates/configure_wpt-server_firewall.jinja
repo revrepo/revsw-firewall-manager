@@ -1,0 +1,106 @@
+#!/bin/bash
+#
+# This file is managed by Rev Puppet service as described on Wiki
+# page https://revwiki.atlassian.net/wiki/display/OP/Puppet+Centralized+Configuration+Management+System
+# Please don't modify the file on the Puppet client server since your changes will be overwritten on the next
+# Puppet agent run on the server.
+#
+
+#
+# UFW configuration script for WPT-SERVER Linux box (driver of WPT Windows box)
+#
+
+
+UFW=/usr/sbin/ufw
+
+if [ ! -x $UFW ]; then
+	echo "FATAL: Cannot find UFW utility at $UFW - aboring."
+	exit 1
+fi
+
+ufw disable
+
+ufw reset
+
+ufw logging off
+
+ufw default deny incoming
+
+ufw default allow outgoing
+
+# Allow SSH access from MANAGER servers
+{% for server in server_list -%}
+{% if server.type == "MANAGER" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 22
+{% endif -%}
+{% endfor %}
+
+# Allow SSH access from home IPs of Rev admins
+{% for server in server_list -%}
+{% if server.type == "HOMEIP" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 22
+{% endif -%}
+{% endfor %}
+
+# Allow SSH access from BACKUP server
+{% for server in server_list -%}
+{% if server.type == "BACKUP" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 22
+{% endif -%}
+{% endfor %}
+
+# Allow NRPE port only from monitoring servers
+{% for server in server_list -%}
+{% if server.type == "MONITOR" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 5666
+{% endif -%}
+{% endfor %}
+
+# Allow SNMP port only from monitor servers
+{% for server in server_list -%}
+{% if server.type == "MONITOR" -%}
+# Allow from {{ server.name }}
+ufw allow proto udp from {{ server.IP }}/32 to any port 161
+{% endif -%}
+{% endfor %}
+
+# Allow HTTP port from MONITOR, WPT, WEBTEST and QA ENV
+{% for server in server_list -%}
+{% if server.type == "MONITOR" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 80
+{% endif -%}
+{% endfor %}
+{% for server in server_list -%}
+{% if server.type == "WT" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 80
+{% endif -%}
+{% endfor %}
+{% for server in server_list -%}
+{% if server.type == "DEV" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 80
+{% endif -%}
+{% endfor %}
+{% for server in server_list -%}
+{% if server.type == "WPT" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 80
+{% endif -%}
+{% endfor %}
+
+# Also allow HTTP from WPT-SERVER boxes themselves
+{% for server in server_list -%}
+{% if server.type == "WPTSERVER" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 80
+{% endif -%}
+{% endfor %}
+
+
+ufw enable
