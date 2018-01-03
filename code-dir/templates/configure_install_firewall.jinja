@@ -45,6 +45,9 @@ ufw allow proto tcp from {{ server.IP }}/32 to any port 22
 {% endif -%}
 {% endfor %}
 
+# Allow SSH from the DEV environment for software deployment
+ufw allow proto tcp from 184.105.140.178/32 to any port 22
+
 # Allow SSH access from BACKUP server
 {% for server in server_list -%}
 {% if server.type == "BACKUP" -%}
