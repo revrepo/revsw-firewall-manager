@@ -83,6 +83,9 @@ ufw allow proto tcp from {{ server.IP }}/32 to any port 5140
 
 # Open Nagios API access from IAD02-MANAGER01
 ufw allow proto tcp from 54.84.12.149/32 to any port 8081
+# Open Nagios API access from TESTSJC20 environment
+ufw allow proto tcp from 184.105.140.178/32 to any port 8081
+
 # Open Nagios API access from home IPs
 {% for server in server_list -%}
 {% if server.type == "HOMEIP" -%}
