@@ -71,6 +71,15 @@ ufw allow proto udp from {{ server.IP }}/32 to any port 161
 {% endif -%}
 {% endfor %}
 
+
+# Allow Traffic Alerter access from all API servers
+{% for server in server_list -%}
+{% if server.type == "API" -%}
+# Allow from {{ server.name }}
+ufw allow proto tcp from {{ server.IP }}/32 to any port 7443
+{% endif -%}
+{% endfor %}
+
 # Allow HTTP and HTTPS ports from everywhere
 ufw allow 80/tcp
 ufw allow 443/tcp
